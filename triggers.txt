@@ -4,5 +4,8 @@ Chat Send "Kruiz Control Initialized"
 OnCommand b 0 !example
 Chat Send "Success! It worked!"
 
+OnCommand bm 0 "!video"
+PlayVideo "test_video.mp4"
+
 OnCommand b 0 !kcreset
 Reset
