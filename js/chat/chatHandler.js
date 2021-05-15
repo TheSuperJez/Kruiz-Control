@@ -45,6 +45,38 @@ class ChatHandler extends Handler {
     }
   }
 
+  objectPath(obj, path) {
+    for (var i = 0, path = path.split('.'), len = path.length; i < len; i++) {
+      obj = obj[path[i]];
+    };
+    return obj;
+  };
+
+  async getTwitchData(username) {
+    const token = await readFile('settings/twitch/token.txt');
+    const clientId = await readFile('settings/twitch/client_id.txt');
+    let twitchData = {};
+    try {
+      const response = await $.ajax({
+        url: `https://api.twitch.tv/helix/streams?user_login=${username}`,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'client-id': clientId
+        }
+      });
+      twitchData.startedAt = _.get(response, 'data[0].started_at', 'Offline');
+      twitchData.gameName = _.get(response, 'data.0.game_name', 'Offline.');
+      twitchData.title = _.get(response, 'data.0.title', 'Offline.');
+      twitchData.viewerCount = _.get(response, 'data.0.viewer_count', 'Offline.');
+      twitchData.uptime = moment(twitchData.startedAt, "YYYY-MM-DDTHH:mm:ssZ").utc().fromNow();
+      twitchData.uptime = twitchData.uptime === 'Invalid date' ? 'Offline' : twitchData.uptime;
+    } catch (exception) {
+      twitchData.error = exception;
+    }
+    return twitchData;
+  }
+
   /**
    * Register trigger from user input.
    * @param {string} trigger name to use for the handler
@@ -145,7 +177,15 @@ class ChatHandler extends Handler {
   async handleData(triggerData) {
     var trigger = triggerData[1].toLowerCase();
     if (trigger === 'send') {
-      ComfyJS.Say(triggerData.slice(2).join(' '));
+      const username = await readFile('settings/twitch/user.txt');
+      const data = await this.getTwitchData(username);
+      const formattedMessage = triggerData.slice(2).join(' ')
+      .replace(/{uptime}/g, data.uptime)
+      .replace(/{startedAt}/g, data.startedAt)
+      .replace(/{gameName}/g, data.gameName)
+      .replace(/{title}/g, data.title)
+      .replace(/{viewerCount}/g, data.viewerCount);
+      ComfyJS.Say(formattedMessage);
     } else if (trigger === 'whisper') {
       ComfyJS.Whisper(triggerData.slice(3).join(' '), triggerData[2]);
     }
