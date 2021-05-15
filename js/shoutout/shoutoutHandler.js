@@ -40,7 +40,6 @@ class ShoutOutHandler extends Handler {
         method: 'GET',
         dataType: 'json',
         success: function (data) {
-          console.log(data);
           const shoutOutDiv = document.createElement('div');
           const shoutOutTitleDiv = document.createElement('div');
           const shoutOutSubtitleDiv = document.createElement('div');

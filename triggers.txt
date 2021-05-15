@@ -10,5 +10,11 @@ PlayVideo "test_video.mp4"
 OnCommand bm 0 "!so"
 ShoutOut {message} 
 
+OnCommand bm 0 "!uptime"
+Chat Send "Stream started: {uptime}"
+
+OnCommand bm 0 "!game"
+Chat Send "{user} is playing: {gameName}"
+
 OnCommand b 0 !kcreset
 Reset
